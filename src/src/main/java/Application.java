@@ -1,7 +1,9 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
-import java.util.Arrays;
+import java.lang.reflect.Type;
+import java.util.*;
 
 public class Application {
 
@@ -75,6 +77,90 @@ public class Application {
         // Deserialization
         System.out.println(Arrays.toString(gson.fromJson("[1,2,3,4,5]", int[].class)));
 
+        System.out.println("---------COLLECTION EXAMPLES-----------------");
 
+        Collection<Integer> collectionOfInts = Arrays.asList(1,2,3,4,5);
+
+        // Serialization
+        String collectionSerialization = gson.toJson(collectionOfInts);  // ==> [1,2,3,4,5]
+        System.out.println("Collection Serialization: " + collectionSerialization);
+
+        // Deserialization
+        TypeToken<Collection<Integer>> collectionType = new TypeToken<Collection<Integer>>(){};
+        System.out.println("Collection Type: " + collectionType);
+
+        /*
+        Gson can serialize collection of arbitrary objects but can not deserialize from it,
+        because there is no way for the user to indicate the type of the resulting object.
+         Instead, while deserializing, the Collection must be of a specific,
+         generic type. This makes sense, and is rarely a problem when following good Java coding practices.
+        */
+
+        System.out.println("---------MAP EXAMPLES-----------------");
+
+        Map<String, String> stringMap = new LinkedHashMap<>();
+        stringMap.put("key", "value");
+        stringMap.put(null, "null-entry");
+
+        // Serialization
+        // Print "null" (String) for null entries
+        System.out.println("MAP Serialization: " + gson.toJson(stringMap));
+
+        Map<Integer, Integer> intMap = new LinkedHashMap<>();
+        intMap.put(2, 4);
+        intMap.put(3, 6);
+
+        // Serialization
+        System.out.println("MAP Serialization after PUTs: " + gson.toJson(intMap));
+
+        TypeToken<Map<String, String>> mapType = new TypeToken<Map<String, String>>(){};
+        String jsonMap = "{\"key\": \"value\"}";
+
+        // Deserialization
+        // For older versions of gson need to use .getType()
+        Map<String, String> mapDeserialization = gson.fromJson(jsonMap, mapType.getType());
+        System.out.println("Map Deserialization: " + mapDeserialization);
+
+        System.out.println("--------------------------");
+
+        Gson gsonComplexKey = new GsonBuilder().enableComplexMapKeySerialization().create();
+        Map<Person, Integer> complexMap = new LinkedHashMap<>();
+        complexMap.put(new Person("Fabio", "Fucks"), 36);
+        complexMap.put(new Person("Joao", "Silva"), 55);
+
+        // Serialization; complex map is serialized as a JSON array containing key-value pairs (as JSON arrays)
+        System.out.println("Json complex map: " + gsonComplexKey.toJson(complexMap));
+
+        Map<String, String> stringMapComplex = new LinkedHashMap<>();
+        stringMapComplex.put("key", "value");
+
+        // Serialization; non-complex map is serialized as a regular JSON object
+        System.out.println("Json non complex map: " + gson.toJson(stringMapComplex));
+
+
+        System.out.println("----------GENERIC TYPES----------------");
+
+        Generic<String> genericObj = new Generic<String>();
+
+        Type genericType = new TypeToken<Generic<String>>() {}.getType();
+        System.out.println("Serialize Generics: " + gson.toJson(genericObj, genericType));
+
+        System.out.println("Deserialize Generics: " + gson.fromJson(json, genericType));
+
+        System.out.println("------------------------------------------");
+
+        System.out.println("----------COLLECTION TYPES----------------");
+
+        Collection collectionObj = new ArrayList();
+        collectionObj.add("hello");
+        collectionObj.add(5);
+        collectionObj.add(new Person("Fabio", "Fucks"));
+
+        String jsonColection = gson.toJson(collectionObj);
+        //Serialized
+        System.out.println("Serialized Collection: " + jsonColection);
+
+        //Deserialized
+        System.out.println("Deserialized Collection: " + gson.fromJson(jsonColection, Collection.class));
     }
 }
